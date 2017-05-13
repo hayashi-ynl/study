@@ -3,10 +3,13 @@
 #include "stdafx.h"
 #include <time.h>
 #include <shlwapi.h>
+#include <string.h>
 
 unsigned int n_year; 
 unsigned int n_month;
 unsigned int n_day;
+
+char str1[] = "58C232FFFE57673C";	/*ﾐﾆFA-ﾀﾚﾊﾟﾝIN*/
 
 int main(void) {
 	void getSysTime(void);
@@ -37,39 +40,99 @@ int main(void) {
 	strcat(pass1, pass3);  /* 文字列連結(pass$ = pass$ + pass2$) */
 	strcat(pass1, dayPath);  /* 文字列連結(pass$ = pass$ + pass2$) */
 	strcat(pass1, pass4);  /* 文字列連結(pass$ = pass$ + pass2$) */
-						   //	system(pass1);
+//	system(pass1);
 
-						   /*ファイルオープン*/
-	FILE *fp;
-	char *fname = "test.txt";
+	/*ファイルオープン*/
+	/*元データ*/
+	FILE *data_fp;
+	char filename[] = "\F:test.txt";
 	char s[1000];
-
-	fp = fopen(fname, "r");
-	if (fp == NULL) {
-		printf("%sファイルが開けません ¥n", fname);
-		return -1;
+	char tok_s[1000];
+	data_fp = fopen(filename, "r");
+	if (data_fp == NULL) {
+		printf("%sファイルが開けません ¥n", filename);
+		return EXIT_FAILURE;
 	}
+	/*ファイル内容nullまで一行ずつ読み出し*/
 	printf("\n");
 	printf("-- fgets() --");
 	printf("\n");
-	while (fgets(s, 100, fp) != NULL) {
-		printf("%s", s);
+	unsigned int row, col;
+	char *tok;
+	unsigned int cmp_row, cmp_col;
+	char *cmp_tok;
+	char split[] = ",";
+	for (row = 1; fgets(s, sizeof(s), data_fp) != NULL; row++) {
+		strcpy(tok_s, s);
+//	while (fgets(s, 1000, data_fp) != NULL) {
+		/*最初の行*/
+		if (row == 1) {
+			printf("%s", s);
+//			continue;
+		}
+		else
+		{
+		/*二行目以降*/
+			tok = strtok(tok_s, split); /* 最初の列を読み出し */
+			for (col = 1; tok != NULL; col++) {
+//			while (tok != NULL) {
+				printf("%s\n", tok);
+				/*２カラム目の値で条件分岐*/
+				if (col == 2) {
+					/*比較用iniデータ*/
+					FILE *cmp_fp;
+					char cmp_filename[] = "PatMACInit.ini";
+					char cmp_s[100];
+					cmp_fp = fopen(cmp_filename, "r");
+					if (cmp_fp == NULL) {
+						printf("%sファイルが開けません ¥n", cmp_filename);
+						return EXIT_FAILURE;
+					}
+
+					unsigned char flg1 = 0; /*例外処理用　ヒットしなかった場合*/
+					for (cmp_row = 1; fgets(cmp_s, sizeof(cmp_s), cmp_fp) != NULL; cmp_row++) {
+						cmp_tok = strtok(cmp_s, split); /* 最初の列を読み出し */
+						if (strcmp(tok, cmp_tok) == 0) {
+							/*ファイル作成*/
+							cmp_tok = strtok(NULL, split); /* 次の列を読み出し = 作成するファイルパス */
+							FILE *put_fp;
+							char put_s[100];
+							put_fp = fopen(cmp_tok, "a");	/*追記で開く（なければつくる）*/
+							if (put_fp == NULL) {
+								printf("%sファイルが開けません ¥n", cmp_tok);
+								return EXIT_FAILURE;
+							}
+							fprintf(put_fp, s);	/*書き込み*/
+							fclose(put_fp);
+							flg1 = 1;
+							break;
+						}
+						
+					}
+					if(flg1 == 0)
+					{
+						/*例外処理　即終了*/
+						printf("登録されていないデータがあります。\n");
+						return -2;
+					}
+					flg1 = 0;
+					fclose(cmp_fp);
+				}
+				tok = strtok(NULL, split); /* 次の列を読み出し */
+			}
+//			printf("\n");
+		}
+//		row += 1;
 	}
 
-	fclose(fp);
-	/*ファイル内容nullまで一行ずつ読み出し*/
-	/*２カラム目の値で条件分岐*/
-	/*例外処理　即終了*/
-	/*ファイル作成*/
+	fclose(data_fp);
 
-
-
-	printf("終了します。\n");
+	printf("\n終了します。\n");
 	return EXIT_SUCCESS;
 }
 
 void getSysTime(void) {
-	time_t timer; struct tm *local; struct tm *utc;
+	time_t timer; struct tm *local;
 
 	/* 現在時刻を取得 */
 	timer = time(NULL);
