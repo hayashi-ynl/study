@@ -20,14 +20,45 @@ int main(void) {
 	getSysTime();
 
 	/*パスを用意*/
-	char pass1[_MAX_PATH] = "\"C:\\Users\\70001502\\Desktop\\JAMB-prj\\test_data\\JAMB-Line\\Patlite\\patlog_auto";
+//	char pass1[_MAX_PATH] = "\"C:\\Users\\70001502\\Desktop\\JAMB-prj\\test_data\\JAMB-Line\\Patlite\\patlog_auto";
+//	char pass1[_MAX_PATH] = "\"C:\\work\\test\\patlite\\patlog_auto";
+	char pass1[_MAX_PATH] = "C:\\work\\test\\patlite\\patlog_auto";
 	char yearPath[5];
 	char pass2[] = "_";
 	char monthPath[3];
 	char pass3[] = "_";
 	char dayPath[3];
-	char pass4[] = ".csv\"";
+//	char pass4[] = ".csv\"";
+	char pass4[] = ".csv";
 
+	/*年月日を指定（date.iniファイルが存在する場合）*/
+	FILE *date_fp;
+	char date_filename[] = "date.ini";
+	char date_s[10];
+	unsigned char date_row, date_col;
+	//	data_fp = fopen(filename, "r");
+	date_fp = fopen(date_filename, "r");
+	if (date_fp == NULL) {
+		/*ファイルが存在しない場合はなにもしない*/
+	}
+	else {
+		/*ファイルが存在する場合は指定の年月日に書き換える*/
+		for (date_row = 1; fgets(date_s, sizeof(date_s), date_fp) != NULL; date_row++) {
+			switch (date_row) {
+			case 1:
+				n_year = atoi(date_s);
+				break;
+			case 2:
+				n_month = atoi(date_s);
+				break;
+			case 3:
+				n_day = atoi(date_s);
+				break;
+			default:
+				break;
+			}
+		}
+	}
 	/*年月日を文字列に変換*/
 	sprintf(yearPath, "%04d", n_year);
 	sprintf(monthPath, "%02d", n_month);
@@ -45,10 +76,11 @@ int main(void) {
 	/*ファイルオープン*/
 	/*元データ*/
 	FILE *data_fp;
-	char filename[] = "\F:test.txt";
+	char filename[] = "F:test.txt";
 	char s[1000];
 	char tok_s[1000];
-	data_fp = fopen(filename, "r");
+//	data_fp = fopen(filename, "r");
+	data_fp = fopen(pass1, "r");
 	if (data_fp == NULL) {
 		printf("%sファイルが開けません ¥n", filename);
 		return -1;
@@ -70,8 +102,7 @@ int main(void) {
 			printf("%s", s);
 //			continue;
 		}
-		else
-		{
+		else {
 		/*二行目以降*/
 			tok = strtok(tok_s, split); /* 最初の列を読み出し */
 			for (col = 1; tok != NULL; col++) {
@@ -127,10 +158,8 @@ int main(void) {
 							flg2 = 0;
 							break;
 						}
-						
 					}
-					if(flg1 == 0)
-					{
+					if (flg1 == 0) {
 						/*例外処理　即終了*/
 						printf("登録されていないデータがあります。\n");
 						return -4;
