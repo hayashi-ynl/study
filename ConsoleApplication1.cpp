@@ -20,15 +20,12 @@ int main(void) {
 	getSysTime();
 
 	/*パスを用意*/
-//	char pass1[_MAX_PATH] = "\"C:\\Users\\70001502\\Desktop\\JAMB-prj\\test_data\\JAMB-Line\\Patlite\\patlog_auto";
-//	char pass1[_MAX_PATH] = "\"C:\\work\\test\\patlite\\patlog_auto";
 	char pass1[_MAX_PATH] = "C:\\work\\test\\patlite\\patlog_auto";
 	char yearPath[5];
 	char pass2[] = "_";
 	char monthPath[3];
 	char pass3[] = "_";
 	char dayPath[3];
-//	char pass4[] = ".csv\"";
 	char pass4[] = ".csv";
 
 	/*年月日を指定（date.iniファイルが存在する場合）*/
@@ -36,7 +33,6 @@ int main(void) {
 	char date_filename[] = "date.ini";
 	char date_s[10];
 	unsigned char date_row, date_col;
-	//	data_fp = fopen(filename, "r");
 	date_fp = fopen(date_filename, "r");
 	if (date_fp == NULL) {
 		/*ファイルが存在しない場合はなにもしない*/
@@ -59,6 +55,8 @@ int main(void) {
 			}
 		}
 	}
+	fclose(date_fp);
+
 	/*年月日を文字列に変換*/
 	sprintf(yearPath, "%04d", n_year);
 	sprintf(monthPath, "%02d", n_month);
@@ -71,24 +69,18 @@ int main(void) {
 	strcat(pass1, pass3);  /* 文字列連結(pass$ = pass$ + pass2$) */
 	strcat(pass1, dayPath);  /* 文字列連結(pass$ = pass$ + pass2$) */
 	strcat(pass1, pass4);  /* 文字列連結(pass$ = pass$ + pass2$) */
-//	system(pass1);
 
 	/*ファイルオープン*/
 	/*元データ*/
 	FILE *data_fp;
-	char filename[] = "F:test.txt";
 	char s[1000];
 	char tok_s[1000];
-//	data_fp = fopen(filename, "r");
 	data_fp = fopen(pass1, "r");
 	if (data_fp == NULL) {
-		printf("%sファイルが開けません ¥n", filename);
+		printf("%sファイルが開けません ¥n", pass1);
 		return -1;
 	}
 	/*ファイル内容nullまで一行ずつ読み出し*/
-	printf("\n");
-	printf("-- fgets() --");
-	printf("\n");
 	unsigned int row, col;
 	char *tok;
 	unsigned int cmp_row, cmp_col;
@@ -96,18 +88,13 @@ int main(void) {
 	char split[] = ",";
 	for (row = 1; fgets(s, sizeof(s), data_fp) != NULL; row++) {
 		strcpy(tok_s, s);
-//	while (fgets(s, 1000, data_fp) != NULL) {
 		/*最初の行*/
-		if (row == 1) {
+		if (row == 1)
 			printf("%s", s);
-//			continue;
-		}
 		else {
 		/*二行目以降*/
 			tok = strtok(tok_s, split); /* 最初の列を読み出し */
 			for (col = 1; tok != NULL; col++) {
-//			while (tok != NULL) {
-				printf("%s\n", tok);
 				/*２カラム目の値で条件分岐*/
 				if (col == 2) {
 					/*比較用iniデータ*/
@@ -169,9 +156,7 @@ int main(void) {
 				}
 				tok = strtok(NULL, split); /* 次の列を読み出し */
 			}
-//			printf("\n");
 		}
-//		row += 1;
 	}
 
 	fclose(data_fp);
