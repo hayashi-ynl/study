@@ -51,7 +51,7 @@ int main(void) {
 	data_fp = fopen(filename, "r");
 	if (data_fp == NULL) {
 		printf("%sファイルが開けません ¥n", filename);
-		return EXIT_FAILURE;
+		return -1;
 	}
 	/*ファイル内容nullまで一行ずつ読み出し*/
 	printf("\n");
@@ -86,7 +86,7 @@ int main(void) {
 					cmp_fp = fopen(cmp_filename, "r");
 					if (cmp_fp == NULL) {
 						printf("%sファイルが開けません ¥n", cmp_filename);
-						return EXIT_FAILURE;
+						return -2;
 					}
 
 					unsigned char flg1 = 0; /*例外処理用　ヒットしなかった場合*/
@@ -97,14 +97,34 @@ int main(void) {
 							cmp_tok = strtok(NULL, split); /* 次の列を読み出し = 作成するファイルパス */
 							FILE *put_fp;
 							char put_s[100];
-							put_fp = fopen(cmp_tok, "a");	/*追記で開く（なければつくる）*/
+							char outfilename[100];
+							/*ファイルパスにファイル名(年月日)をマージ*/
+							sprintf(outfilename, "%s%s%s%s", cmp_tok, yearPath, monthPath, dayPath);
+							cmp_tok = strtok(NULL, split); /* 次の列を読み出し = 作成するファイル拡張子 */
+							strcat(outfilename, cmp_tok);  /* 文字列連結(pass$ = pass$ + pass2$) */
+							/*追記で開く（なければつくる）*/
+							put_fp = fopen(outfilename, "a+");	
 							if (put_fp == NULL) {
-								printf("%sファイルが開けません ¥n", cmp_tok);
-								return EXIT_FAILURE;
+								printf("%sファイルが開けません ¥n", outfilename);
+								return -3;
 							}
-							fprintf(put_fp, s);	/*書き込み*/
-							fclose(put_fp);
+							/*書き込む前にファイルを確認（既に記載済みならスキップ）*/
+							unsigned int put_row, put_col;
+							unsigned char flg2 = 0; /*比較結果判断用　既に記載済みの場合*/
+							char chk_s[100];
+							for (put_row = 1; fgets(chk_s, sizeof(chk_s), put_fp) != NULL; put_row++) {
+								if (strcmp(chk_s, s) == 0) {
+									flg2 = 1;
+									break;/*記載済み発見次第ループ抜け*/
+								}
+							}
+							/*書き込み*/
+							if (flg2 != 1) {
+								fprintf(put_fp, s);
+								fclose(put_fp);
+							}
 							flg1 = 1;
+							flg2 = 0;
 							break;
 						}
 						
@@ -113,7 +133,7 @@ int main(void) {
 					{
 						/*例外処理　即終了*/
 						printf("登録されていないデータがあります。\n");
-						return -2;
+						return -4;
 					}
 					flg1 = 0;
 					fclose(cmp_fp);
