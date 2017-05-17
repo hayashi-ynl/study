@@ -130,6 +130,8 @@ int main(void) {
 
 	/* 検索終了 */
 	FindClose(hFind);
+	FindClose(d_hFind);
+	FindClose(f_hFind);
 
 	printf("\nEndTheProgram\n");
 	return EXIT_SUCCESS;
